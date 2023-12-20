@@ -36,16 +36,12 @@
 					</div>
 					<div class="col-md-2">
 						<div class="row">
+							<p>Selected Route:</p>
+							<p id="active_route">No Route selected</p>
+						</div>
+						<div class="row">
 							<button onclick="getLocation()">Get location</button>
 							<p id="p_geoloc">Geolocation not available.</p>
-						</div>
-						<div class="row">
-							<button onclick="save()">Save Route</button>
-							<p id="saveNote">Idle</p>
-						</div>
-						<div class="row">
-							<button onclick="loadRoute()">Load Route</button>
-							<p id="loadNote">Idle</p>
 						</div>
 						<div class="row">
 							<p id="debug">Idle</p>
@@ -54,18 +50,16 @@
 							<button onclick="clearAll()">Delete Everything!11!!</button><br>
 						</div>
 						<div class="row">
-							<form action="#">
-								<label for="search">Selected Route:</label>
-								<input type="search" id="search" name="search"><br><br>
-								<input type="submit" value="Submit">
-							  </form>
+								<div class="autocomplete">
+								<input id="myInput" type="text" name="route" placeholder="Route name">
+								</div>
+							<button onclick="selectRoute()">Select Route</button>
 						</div>
 						<div class="row">
-							<form action="#">
-								<label for="name">New Route Name:</label>
-								<input type="text" id="name" name="name"><br><br>
-								<input type="submit" value="Submit">
-							  </form>
+								<label for="nameRoute">New Route Name:</label>
+								<input type="text" id="nameRoute" name="nameRoute"><br><br>
+								<button onclick="addNewRoute()">Add Route</button>
+							  
 						</div>
 						<div class="row">
 							<form action="#">
@@ -75,7 +69,7 @@
 								<input type="text" id="lon" name="lon"><br><br>
 								<label for="rad">Radius:</label>
 								<input type="text" id="rad" name="rad"><br><br>
-								<input type="submit" value="Submit">
+								<input type="submit" onclick="addLocToRoute()" value="Submit">
 							  </form>
 						</div>
 						<div class="row">
