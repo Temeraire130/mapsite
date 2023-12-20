@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8">
+		<!-- Für Mobilgeräte initialen Zoom abschalten -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- Angaben für Suchmaschinen -->
+		<!-- Beschreibung -->
+		<meta name="description" content="Eine Seite um zukünftige Treffen zu organisieren.">
+		<!-- Stichwörter -->
+		<meta name="keywords" content="Organizer, Map, Meetings">
+		<title>
+			Mapsite
+		</title>
+		<link id="css" rel="stylesheet" type="text/css" href="demo.css">
+		<!-- Leaflet für die Map -->
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+		<!-- Bootstrap -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+		
+		<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script> -->
+		<!-- async Seite weiterladen während Skript eingelesen wird!! -->
+	</head>
+	<body>
+		<header class="d-none d-lg-block">
+			<h1>
+				Mapsite - simple meetup organizer
+			</h1>
+		</header>
+		
+		<main>
+			<div class="container">
+				<div class="row">
+					<div class="col-md-8">
+						<div id ="map"></div>
+					</div>
+					<div class="col-md-2">
+						<div class="row">
+							<button onclick="getLocation()">Get location</button>
+							<p id="p_geoloc">Geolocation not available.</p>
+						</div>
+						<div class="row">
+							<button onclick="save()">Save Route</button>
+							<p id="saveNote">Idle</p>
+						</div>
+						<div class="row">
+							<button onclick="loadRoute()">Load Route</button>
+							<p id="loadNote">Idle</p>
+						</div>
+						<div class="row">
+							<p id="debug">Idle</p>
+						</div>
+						<div class="row">
+							<button onclick="clearAll()">Delete Everything!11!!</button><br>
+						</div>
+						<div class="row">
+							<form action="#">
+								<label for="search">Selected Route:</label>
+								<input type="search" id="search" name="search"><br><br>
+								<input type="submit" value="Submit">
+							  </form>
+						</div>
+						<div class="row">
+							<form action="#">
+								<label for="name">New Route Name:</label>
+								<input type="text" id="name" name="name"><br><br>
+								<input type="submit" value="Submit">
+							  </form>
+						</div>
+						<div class="row">
+							<form action="#">
+								<label for="lat">Latitude:</label>
+								<input type="text" id="lat" name="lat"><br><br>
+								<label for="lon">Longitude:</label>
+								<input type="text" id="lon" name="lon"><br><br>
+								<label for="rad">Radius:</label>
+								<input type="text" id="rad" name="rad"><br><br>
+								<input type="submit" value="Submit">
+							  </form>
+						</div>
+						<div class="row">
+							<button onclick="deleteCurrentRoute()">Delete Selected Route</button><br>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+
+		<!-- Bootstrap -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+		<!-- Leaflet für die Map -->
+		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+		<!-- Eigenes Javascript -->
+		<script src="demo.js"></script>
+	</body>
+</html>

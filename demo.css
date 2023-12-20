@@ -1,0 +1,36 @@
+#map { height: 100vh; }
+
+/* Universalselektor */
+* {
+	font-family: Arial, Verdana, sans-serif; 
+	text-align: justify;
+	font-size:1rem;
+	padding: 0;
+	margin: 0;
+	border-radius: 0.5rem;
+}
+
+/* Allgemeine Einstellungen, gelten für alle Elemente mit diesem Namen*/
+p { 
+	font-size:1rem
+}
+
+h1 { 
+	font-size: 1.8rem; 
+	font-style: bold;
+}
+
+h2 { 
+	font-size: 1.4rem; 
+	font-style: italic;
+}
+
+h3 { 
+	font-size: 1.2rem; 
+}
+/* Für alle Überschriften Text zentrieren, untere margin 2rem*/
+h1, h2, h3 {
+	text-align: center;
+	margin-bottom: 2rem;		
+}
+
