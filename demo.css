@@ -16,7 +16,7 @@ p {
 }
 
 h1 { 
-	font-size: 1.8rem; 
+	font-size: 1.5rem; 
 	font-style: bold;
 }
 
@@ -34,11 +34,112 @@ h1, h2, h3 {
 	margin-bottom: 2rem;		
 }
 
+div.options h1, div.route h1 {
+	font-size: 1.8rem; 
+	font-style: bold;
+	color: #739072;
+	font-family: Georgia, 'Times New Roman', Times, serif;
+	margin-top: 5%;
+}
+
+div.route, div.search, div.follow {
+	row-gap: 20px;
+  	justify-content: space-between;
+}
+
+div.new, div.add, div.delete {
+	row-gap: 10px;
+  	justify-content: space-between;
+}
+
+div.search button, div.follow button, div.new button, div.add button, div.delete button {
+	border-radius: 5px;
+	max-width: 90%;
+	text-align: center;
+	margin: 0 auto;
+}
+
+div.new input, div.add input, div.delete input {
+	border-radius: 10px;
+	max-width: 90%;
+	text-align: center;
+	margin: 0 auto;
+}
+
+div.select p {
+	color: #3A4D39;
+	text-align: center;
+}
+
+#active_route {
+	font-family: Georgia, 'Times New Roman', Times, serif;
+	font-size: 1.4rem; 
+	color: #3A4D39;
+}
+
+body {
+	/* Image from: https://pixabay.com/de/illustrations/kompass-nautisch-jahrgang-karte-3408928/ */
+	background-image: url(compass.jpg);
+	backdrop-filter: blur(5px);
+}
+
+div.all {
+	background-color: #3A4D39;
+}
+
+div.route {
+	background-color: #ECE3CE;
+}
+
+div.options {
+	background-color: #ECE3CE;
+}
+
+button {
+	background-color: #4F6F52;
+	color: #ECE3CE;
+	margin: 10%;
+	display: inline-block;
+	box-sizing: border-box;
+	border: 3px solid transparent;
+	width: 100%;
+	padding: 4px;
+	border-radius: 25px;
+}
+
+button:hover {
+	background-color: #ECE3CE;
+	border-color: #3A4D39;
+	color: #3A4D39;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 1em 0;
+    padding: 0;
+	color: #739072;
+}
+
+.arrow-icon {
+	width: 14px;
+	height: 14px;
+}
+
+	.arrow-icon > div {
+		margin-left: -1px;
+		margin-top: -3px;
+		transform-origin: center center;
+		font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+	}
+
 /******************* Autocompletion Madness ***********/
 
 * { box-sizing: border-box; }
 body {
-  font: 16px Arial;
+  font: 15px Arial;
 }
 .autocomplete {
   /*the container must be positioned relative:*/

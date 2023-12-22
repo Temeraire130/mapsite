@@ -9,40 +9,47 @@
 		<meta name="description" content="Eine Seite um Punkte auf einer Karte zu markieren und diese mit Überprüfung der Karte abzulaufen.">
 		<!-- Stichwörter -->
 		<meta name="keywords" content="AR, Map, GeoCaching">
+
 		<title>
 			RealLifeRouter
 		</title>
-		<link id="css" rel="stylesheet" type="text/css" href="demo.css">
+		
 		<!-- Leaflet für die Map -->
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+		<link id="css" rel="stylesheet" type="text/css" href="demo.css">
 		<!-- Bootstrap -->
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 		
-		<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script> -->
-		<!-- async Seite weiterladen während Skript eingelesen wird!! -->
 	</head>
 	<body>	
 		<main>
-			<div class="container">
+			<div class="container all">
 				<div class="row">
 					<!-- Routing -->
-					<div class="col-2">
+					<div class="col-2 route">
 						<h1>
 							RealLifeRouter
 						</h1>
-						<div class="row">
-							<p>Selected Route:</p>
+						<hr/>
+						<div class="row select">
+							<p>Selected Route</p>
 							<p id="active_route">No Route selected</p>
+							<p id="topoints"></p>
 						</div>
-						<div class="row">
+						<hr/>
+						<div class="row search">
 							<div class="autocomplete">
 							<input id="myInput" type="text" name="route" placeholder="Route name">
 							</div>
 							<button onclick="selectRoute()">Select Route</button>
 						</div>
-						<div class="row">
+						<hr/>
+						<div class="row follow">
 							<button id="follow" onclick="toggleFollow()">Center on Location</button>
-							<p id="p_geoloc">Geolocation not available.</p>
+							<p id="p_geoloc"></p>
+						</div>
+						<div class="row debug">
+							<p id="debug"></p>
 						</div>
 					</div>
 					<!-- Map -->
@@ -50,30 +57,29 @@
 						<div id ="map"></div>
 					</div>
 					<!-- Routing Options -->
-					<div class="col-2">
-						<p>Route Creation</p>
-						<div class="row">
-							<p id="debug">Idle</p>
-						</div>
-						<div class="row">
-							<button onclick="clearAll()">Delete Everything!11!!</button><br>
-						</div>
-						<div class="row">
-								<label for="nameRoute">New Route Name:</label>
+					<div class="col-2 options">
+						<h1>
+							Route Creation
+						</h1>
+					<hr/>
+						<div class="row new">
+								<label for="nameRoute">New Route Name</label>
 								<input type="text" id="nameRoute" name="nameRoute"><br><br>
 								<button onclick="addNewRoute()">Add Route</button>
 							
 						</div>
-						<div class="row">
-								<label for="lat">Latitude:</label>
+						<hr/>
+						<div class="row add">
+								<label for="lat">Latitude</label>
 								<input type="text" id="lat" name="lat"><br><br>
-								<label for="lon">Longitude:</label>
+								<label for="lon">Longitude</label>
 								<input type="text" id="lon" name="lon"><br><br>
-								<label for="rad">Radius:</label>
+								<label for="rad">Radius</label>
 								<input type="text" id="rad" name="rad"><br><br>
 								<button onclick="addLocToRoute()">Add to Route</button>
 						</div>
-						<div class="row">
+						<hr/>
+						<div class="row delete">
 							<button onclick="deleteCurrentRoute()">Delete Selected Route</button><br>
 						</div>
 					</div>
