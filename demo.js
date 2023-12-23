@@ -1,5 +1,5 @@
-var debug = document.getElementById("debug");
-var activeRoute = document.getElementById("active_route");
+var debug = document.getElementById("debug")
+var activeRoute = document.getElementById("active_route")
 
 /***************** MAP *************************/
 // Creating map options
@@ -10,36 +10,91 @@ var mapOptions = {
 }
 
 // Creating a map object
-var map = new L.map('map', mapOptions);
+var map = new L.map('map', mapOptions)
 
 // Creating a Layer object
-var layer = new L.TileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png');
+var layer = new L.TileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png')
 
 // Adding layer to the map
-map.addLayer(layer);
+map.addLayer(layer)
 
-var display = L.featureGroup();
+var display = L.featureGroup()
 
 map.addLayer(display)
 
-var popup = L.popup();
+var popup = L.popup()
 
 map.on('click', (e) => {
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
+    const lat = e.latlng.lat
+    const lng = e.latlng.lng
+    if(inRangeOfPoint(lat, lng)){
+        var point = searchPoint(lat, lng)
+        console.log("PointAfterSearch: " + JSON.stringify(point))
+        popup.setLatLng(e.latlng)
+         .setContent('<b class="poptext">You clicked at:</b><br>Latitude: '
+             + lat.toString()
+             + '<br>Longitude: '
+             + lng.toString()
+             + '<br><br><center><button id="addclick">Add Point to Route</button><br><br>'
+             + pointToString(point)
+             + '<br><br><center><button id="removeclick">Remove Point from Route</button>')
+        .openOn(map)
 
-    popup.setLatLng(e.latlng)
+        document.getElementById('addclick').addEventListener('click', (e) => {
+            addClickedLocation(lat, lng)
+            map.closePopup()
+        })
+        document.getElementById('removeclick').addEventListener('click', (e) => {
+            console.log("PointAfterRemove: " + JSON.stringify(point))
+            removePoint(point)
+            map.closePopup()
+        })
+    } else {
+        popup.setLatLng(e.latlng)
          .setContent('<b class="poptext">You clicked at:</b><br>Latitude: '
              + lat.toString()
              + '<br>Longitude: '
              + lng.toString()
              + '<br><br><center><button id="addclick">Add Point to Route</button>')
-        .openOn(map);
+        .openOn(map)
 
     document.getElementById('addclick').addEventListener('click', (e) => {
         addClickedLocation(lat, lng)
-    });
+        map.closePopup()
+    })
+    }
 })
+
+function inRangeOfPoint(lat, lng) {
+    if(selectedRoute !== undefined && selectedRoute !== null){
+        if(Object.hasOwn(selectedRoute, 'points') && selectedRoute.points.length > 0){
+            if(searchPoint(lat, lng) !== null){
+                return true
+            } else {
+                return false
+            }
+        } else {
+            return false
+        }
+    } else {
+        return false
+    }
+}
+
+function searchPoint(lat, lng) {
+    var point = null
+    selectedRoute.points.forEach((element) => {
+        if(getDistance(lat, lng, element.latitude, element.longitude) * 1000 <= element.radius){
+            point = element
+        }
+    })
+    return point
+}
+
+function pointToString(point) {
+    console.log("point: " + selectedRoute.points.indexOf(point))
+    return selectedRoute.name + ": Point #" + (selectedRoute.points.indexOf(point) + 1)
+}
 
 /**************************************************/
 
@@ -53,6 +108,7 @@ function showPosition(position) {
     "<br>Longitude: " + position.coords.longitude;
 	map.setView([position.coords.latitude, position.coords.longitude], 18)
     markerUpdate()
+    arrowUpdate()
     testForPoint(position)
 }
 
@@ -83,6 +139,8 @@ var following = false
 var id
 
 var marker
+var line
+var directionArrows
 
 function toggleFollow(){
     if(navigator.geolocation){
@@ -95,6 +153,13 @@ function toggleFollow(){
                 navigator.geolocation.clearWatch(id)
                 following = false
                 document.getElementById("follow").textContent = "Center on Location"
+                if(marker !== undefined && marker !== null){
+                    map.removeLayer(marker)
+                }
+                if(directionArrows !== undefined && directionArrows !== null){
+                    map.removeLayer(directionArrows)
+                }
+                loadRoute();
             } else {
                 debug.innerHTML("There is no ID of the handler.")
             }
@@ -109,6 +174,49 @@ function markerUpdate(){
     console.log("Pos: " + lastKnownPosition.coords.latitude + lastKnownPosition.coords.longitude)
     marker = L.marker([lastKnownPosition.coords.latitude, lastKnownPosition.coords.longitude]);
     map.addLayer(marker)
+}
+
+function arrowUpdate() {
+    if(directionArrows !== undefined && directionArrows !== null){
+        map.removeLayer(directionArrows)
+    }
+    if(selectedRoute !== undefined && selectedRoute !== null){
+        if(Object.hasOwn(selectedRoute, 'points') && selectedRoute.points.length > 0){
+            if(lastKnownPosition !== undefined && lastKnownPosition !== null){
+                var nearestPoint = getNextPoint()
+                if(nearestPoint !== null){
+                    if(getDistance(lastKnownPosition.coords.latitude, lastKnownPosition.coords.longitude, nearestPoint.latitude, nearestPoint.longitude) * 1000 > nearestPoint.radius){
+                        directionArrows = L.featureGroup(getArrows(
+                            [[lastKnownPosition.coords.latitude,
+                                 lastKnownPosition.coords.longitude],
+                                [nearestPoint.latitude,
+                                 nearestPoint.longitude]],
+                             'yellow', 5 ,map)).addTo(map);
+                    }
+                }
+            }
+        }
+    }
+}
+
+function getNextPoint(){
+    if(selectedRoute !== undefined && selectedRoute !== null){
+        if(Object.hasOwn(selectedRoute, 'points') && selectedRoute.points.length > 0){
+            var nearestPoint = selectedRoute.points[0]
+            selectedRoute.points.forEach((element) => {
+                if(getDistance(element.latitude, element.longitude, lastKnownPosition.coords.latitude, lastKnownPosition.coords.longitude)
+                    < getDistance(nearestPoint.latitude, nearestPoint.longitude, lastKnownPosition.coords.latitude, lastKnownPosition.coords.longitude)
+                && element.color == 'red'){
+                    nearestPoint = element
+                }
+            })
+            if(nearestPoint.color == 'red'){
+                return nearestPoint
+            } else {
+                return null
+            }
+        }
+    }
 }
 
 /*****************************************************/
@@ -171,6 +279,34 @@ function startTimer(element){
     ids.set(element, intervalId)
 }
 
+/*****************************************************/
+
+/*****************Distance computation***********/
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const earthRadiusKm = 6371; // Radius of the Earth in kilometers
+
+    // Convert latitude and longitude from degrees to radians
+    const dLat = degreesToRadians(lat2 - lat1);
+    const dLon = degreesToRadians(lon2 - lon1);
+
+    const radLat1 = degreesToRadians(lat1);
+    const radLat2 = degreesToRadians(lat2);
+
+    // Haversine formula
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.sin(dLon / 2) * Math.sin(dLon / 2) *
+              Math.cos(radLat1) * Math.cos(radLat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    // Calculate the distance
+    const distance = earthRadiusKm * c;
+    return distance;
+}
+
+function degreesToRadians(degrees) {
+    return degrees * (Math.PI / 180);
+}
 /*****************************************************/
 
 /******************** ROUTING ************************/
@@ -254,6 +390,10 @@ function loadRoute(){
             }).addTo(display);
         });
         map.addLayer(display)
+        if(following){
+            arrowUpdate()
+            updateToPoints()
+        }
         debug.innerHTML = "Route successfully loaded!"
     } else {
         debug.innerHTML = "Selected Route doesn't contain any elements."
@@ -292,6 +432,20 @@ function selectRoute(){
         updateToPoints()
     } else {
         debug.innerHTML = "There is no Route with that name!"
+    }
+}
+
+function reloadRoute(){
+    load()
+    if(selectedRoute !== undefined && selectedRoute !== null){
+        if(routeExists(selectedRoute.name)){
+            selectedRoute = searchRouteByName(selectedRoute.name)
+            activeRoute.innerHTML = selectedRoute.name
+            loadRoute()
+            updateToPoints()
+        } else {
+            debug.innerHTML = "Error reloading Route!"
+        }
     }
 }
 
@@ -343,7 +497,7 @@ function addLocToRoute(){
     if(selectedRoute){
         if(Object.hasOwn(selectedRoute, 'points')){
             if(checkPointInputs()){
-            load()
+            reloadRoute()
             selectedRoute.points.push({
                 latitude: parseFloat(document.getElementById("lat").value),
                 longitude: parseFloat(document.getElementById("lon").value),
@@ -367,7 +521,7 @@ function addLocToRoute(){
 function addClickedLocation(lat, lng){
     if(selectedRoute){
         if(Object.hasOwn(selectedRoute, 'points')){
-            load()
+            reloadRoute()
             var rad
             try {
                 if(parseFloat(document.getElementById("rad").value) > 0){
@@ -397,6 +551,24 @@ function addClickedLocation(lat, lng){
     }
 }
 
+function removePoint(point) {
+    if(selectedRoute){
+        if(Object.hasOwn(selectedRoute, 'points')){
+            const index = selectedRoute.points.indexOf(point);
+            reloadRoute()
+            selectedRoute.points.splice(index, 1);
+            deleteRoute(selectedRoute.name)
+            addRoute(selectedRoute)
+            loadRoute()
+            debug.innerHTML = "Successfully removed Point from Route!"
+        } else {
+            debug.innerHTML = "The Route has no points!"
+        }
+    } else {
+        debug.innerHTML = "There is no Route Selected!"
+    }
+}
+
 function clearPointInput(){
     document.getElementById("lat").value = ""
     document.getElementById("lon").value = ""
@@ -408,18 +580,18 @@ function checkPointInputs(){
         var latitude = parseFloat(document.getElementById("lat").value)
         var longitude = parseFloat(document.getElementById("lon").value)
         var radius = parseFloat(document.getElementById("rad").value)
-        if(latitude >= 0){
-            if(longitude >= 0){
+        if(latitude >= -90 && latitude <= 90){
+            if(longitude >= -180 && longitude <= 180){
                 if(radius > 0){
                     return true
                 } else {
                     debug.innerHTML = "Radius has to be greater than 0!"
                 }
             } else {
-                debug.innerHTML = "Longitude has to be 0 or greater!"
+                debug.innerHTML = "Longitude has to be between -180 and 180 degrees!"
             }
         } else {
-            debug.innerHTML = "Latitude has to be 0 or greater!"
+            debug.innerHTML = "Latitude has to be between -90 and 90 degrees!"
         }
     } catch (error) {
         debug.innerHTML = "Please enter valid data for the new point!"
@@ -455,6 +627,26 @@ function getRouteNames(){
         return nameArray
     }
 }
+/*************************************************/
+
+/********************** Option Toggle ************/
+
+var isCollapsed = true
+
+function toggleOptions() {
+    if(isCollapsed){
+        document.getElementById('middle').classList.remove('col-10');
+        document.getElementById('middle').classList.add('col-8');
+        isCollapsed = false
+        $('#options').toggle()
+    } else {
+        $('#options').toggle()
+        document.getElementById('middle').classList.remove('col-8');
+        document.getElementById('middle').classList.add('col-10');
+        isCollapsed = true
+    }
+}
+
 /*************************************************/
 
 /****************** Arrow ***********************/
@@ -494,7 +686,7 @@ function getAngle(latLng1, latlng2, coef) {
 
 function myMidPoint(latlng1, latlng2, per, mapObj) {
     if (!mapObj)
-        throw new Error('map is not defined');
+        debug.innerHTML = "Error loading map!"
 
     var halfDist, segDist, dist, p1, p2, ratio,
         points = [];
@@ -546,34 +738,6 @@ function Point(x, y, round) {
 }
 
 /***********************************************/
-
-/*****************Distance computation***********/
-
-function getDistance(lat1, lon1, lat2, lon2) {
-    const earthRadiusKm = 6371; // Radius of the Earth in kilometers
-
-    // Convert latitude and longitude from degrees to radians
-    const dLat = degreesToRadians(lat2 - lat1);
-    const dLon = degreesToRadians(lon2 - lon1);
-
-    const radLat1 = degreesToRadians(lat1);
-    const radLat2 = degreesToRadians(lat2);
-
-    // Haversine formula
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.sin(dLon / 2) * Math.sin(dLon / 2) *
-              Math.cos(radLat1) * Math.cos(radLat2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    // Calculate the distance
-    const distance = earthRadiusKm * c;
-    return distance;
-}
-
-function degreesToRadians(degrees) {
-    return degrees * (Math.PI / 180);
-}
-/*****************************************************/
 
 /**************** Autocompletion Madness *****************/
 //Adapted from https://www.w3schools.com/howto/howto_js_autocomplete.asp
@@ -677,6 +841,7 @@ function autocomplete(inp, arr) {
    }
   }
 
+  autocomplete(document.getElementById("myInput"), getRouteNames());
+
   /***********************************************/
 
-  autocomplete(document.getElementById("myInput"), getRouteNames());
