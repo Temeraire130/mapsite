@@ -1,4 +1,10 @@
-#map { height: 100vh; }
+#map {
+	height: 100vh; 
+}
+
+/* #content {
+	width: 100vw;
+} */
 
 /* Universalselektor */
 * {
@@ -31,15 +37,15 @@ h3 {
 /* Für alle Überschriften Text zentrieren, untere margin 2rem*/
 h1, h2, h3 {
 	text-align: center;
-	margin-bottom: 2rem;		
+	margin-bottom: 10%;	
 }
 
 div.options h1, div.route h1 {
-	font-size: 1.8rem; 
+	font-size: 2vw; 
 	font-style: bold;
 	color: #739072;
 	font-family: Georgia, 'Times New Roman', Times, serif;
-	margin-top: 5%;
+	margin-top: 10%;
 }
 
 div.route, div.search, div.follow {

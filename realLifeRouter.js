@@ -29,7 +29,6 @@ map.on('click', (e) => {
     const lng = e.latlng.lng
     if(inRangeOfPoint(lat, lng)){
         var point = searchPoint(lat, lng)
-        console.log("PointAfterSearch: " + JSON.stringify(point))
         popup.setLatLng(e.latlng)
          .setContent('<b class="poptext">You clicked at:</b><br>Latitude: '
              + lat.toString()
@@ -45,7 +44,6 @@ map.on('click', (e) => {
             map.closePopup()
         })
         document.getElementById('removeclick').addEventListener('click', (e) => {
-            console.log("PointAfterRemove: " + JSON.stringify(point))
             removePoint(point)
             map.closePopup()
         })
@@ -92,7 +90,6 @@ function searchPoint(lat, lng) {
 }
 
 function pointToString(point) {
-    console.log("point: " + selectedRoute.points.indexOf(point))
     return selectedRoute.name + ": Point #" + (selectedRoute.points.indexOf(point) + 1)
 }
 
@@ -115,19 +112,15 @@ function showPosition(position) {
 function showError(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:
-            console.log("error 1")
             x.innerHTML = "User denied the request for Geolocation."
             break;
         case error.POSITION_UNAVAILABLE:
-            console.log("Error 2")
             x.innerHTML = "Location information is unavailable."
             break;
         case error.TIMEOUT:
-            console.log("error 4")
             x.innerHTML = "The request to get user location timed out."
             break;
         case error.UNKNOWN_ERROR:
-            console.log(" error 5")
             x.innerHTML = "An unknown error occurred."
             break;
     }
@@ -159,7 +152,9 @@ function toggleFollow(){
                 if(directionArrows !== undefined && directionArrows !== null){
                     map.removeLayer(directionArrows)
                 }
-                loadRoute();
+                if(selectedRoute !== undefined && selectedRoute !== null){
+                    loadRoute();
+                }
             } else {
                 debug.innerHTML("There is no ID of the handler.")
             }
@@ -171,7 +166,6 @@ function markerUpdate(){
     if(marker !== undefined && marker !== null){
         map.removeLayer(marker)
     }
-    console.log("Pos: " + lastKnownPosition.coords.latitude + lastKnownPosition.coords.longitude)
     marker = L.marker([lastKnownPosition.coords.latitude, lastKnownPosition.coords.longitude]);
     map.addLayer(marker)
 }
@@ -231,11 +225,9 @@ var ids = new Map()
 function testForPoint(position){
     if(selectedRoute && Object.hasOwn(selectedRoute, 'points')){
         selectedRoute.points.forEach((element) => {
-            console.log("Testing")
             if(!activePoints.has(element) && element.color == 'red'){
                 if(getDistance(position.coords.latitude, position.coords.longitude, element.latitude, element.longitude) * 1000 <= element.radius){
                     activePoints.set(element, 0)
-                    console.log("Started for Element " + JSON.stringify(element))
                     startTimer(element)
                 }
             }
@@ -249,7 +241,6 @@ function startTimer(element){
             if(activePoints.get(element) >= checkInterval){
                 const index = selectedRoute.points.indexOf(element);
                 selectedRoute.points.splice(index, 1);
-                console.log("Ready: " + JSON.stringify(element))
                 selectedRoute.points.push({
                     latitude: element.latitude,
                     longitude: element.longitude,
@@ -265,7 +256,6 @@ function startTimer(element){
             } else {
                 var value = activePoints.get(element)
                 value++
-                console.log("Tick " + value + " For: " + JSON.stringify(element))
                 activePoints.set(element, value)
             }
         } else {
@@ -372,32 +362,36 @@ function load(){
 }
 
 function loadRoute(){
-    console.debug("Route: " + selectedRoute)
-    console.debug("Route has points: " + Object.hasOwn(selectedRoute, 'points'))
-    console.debug("Test")
-    console.debug("Route has more than one point: " + (selectedRoute.points.length >= 1))
-    if(selectedRoute && Object.hasOwn(selectedRoute, 'points') && selectedRoute.points.length >= 0){
-        console.log("loadedRoute: " + JSON.stringify(selectedRoute))
+    if(selectedRoute !== undefined && selectedRoute !== null){
+        if(selectedRoute && Object.hasOwn(selectedRoute, 'points') && selectedRoute.points.length >= 0){
+            map.removeLayer(display)
+            display = null
+            display = L.featureGroup()
+            selectedRoute.points.forEach(element => {
+                L.circle([element.latitude, element.longitude], {
+                    color: element.color,
+                    fillColor: element.fillColor,
+                    fillOpacity: 0.5,
+                    radius: element.radius
+                }).addTo(display);
+            });
+            map.addLayer(display)
+            if(following){
+                arrowUpdate()
+                updateToPoints()
+            }
+            debug.innerHTML = "Route successfully loaded!"
+        } else {
+            debug.innerHTML = "Selected Route doesn't contain any elements."
+        }
+    } else {
         map.removeLayer(display)
         display = null
         display = L.featureGroup()
-        selectedRoute.points.forEach(element => {
-            L.circle([element.latitude, element.longitude], {
-                color: element.color,
-                fillColor: element.fillColor,
-                fillOpacity: 0.5,
-                radius: element.radius
-            }).addTo(display);
-        });
         map.addLayer(display)
-        if(following){
-            arrowUpdate()
-            updateToPoints()
-        }
-        debug.innerHTML = "Route successfully loaded!"
-    } else {
-        debug.innerHTML = "Selected Route doesn't contain any elements."
+        activeRoute.innerHTML = "No Route selected"
     }
+    
 }
 
 function updateToPoints(){
@@ -601,13 +595,19 @@ function checkPointInputs(){
 function deleteCurrentRoute(){
     if(selectedRoute){
         if(deleteRoute(selectedRoute.name)){
-            debug.innerHTML = "Successfully deleted Route!"
             map.removeLayer(display)
             display = null
             display = L.featureGroup()
             map.addLayer(display)
             autocomplete(document.getElementById("myInput"), getRouteNames());
             selectedRoute = null
+            loadRoute();
+            document.getElementById('myInput').value = ""
+            if(following){
+                arrowUpdate()
+            } 
+            updateToPoints()
+            debug.innerHTML = "Successfully deleted Route!"
         } else {
             debug.innerHTML = "Error deleting Route."
         }
@@ -618,12 +618,10 @@ function deleteCurrentRoute(){
 
 function getRouteNames(){
     var nameArray = new Array()
-    console.log(load())
     if(routeArray){
         routeArray.forEach((element) => {
             nameArray.push(element.name)
         })
-        console.log(nameArray)
         return nameArray
     }
 }
@@ -635,14 +633,18 @@ var isCollapsed = true
 
 function toggleOptions() {
     if(isCollapsed){
-        document.getElementById('middle').classList.remove('col-10');
-        document.getElementById('middle').classList.add('col-8');
+        document.getElementById('middle').classList.remove('col-sm-10');
+        document.getElementById('middle').classList.add('col-sm-8');
+        document.getElementById('options').classList.add('d-none');
+        document.getElementById('options').classList.add('d-sm-block');
         isCollapsed = false
         $('#options').toggle()
     } else {
         $('#options').toggle()
-        document.getElementById('middle').classList.remove('col-8');
-        document.getElementById('middle').classList.add('col-10');
+        document.getElementById('middle').classList.remove('col-sm-8');
+        document.getElementById('middle').classList.add('col-sm-10');
+        document.getElementById('options').classList.remove('d-none');
+        document.getElementById('options').classList.remove('d-sm-block');
         isCollapsed = true
     }
 }
